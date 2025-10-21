@@ -3,6 +3,7 @@ import dotenv from "dotenv"
 import cookieParser from "cookie-parser"
 
 import connectDB from "./config/db.js"
+import authRouter from "./routes/userAuth.routes.js"
 
 
 
@@ -19,9 +20,7 @@ app.use(cookieParser())
 app.use(express.urlencoded({extended:true}))
 
 
-app.use("/", (req,res)=>{
-    res.send("Hello Ji")
-})
+app.use("/user", authRouter)
 
 
 

@@ -7,17 +7,20 @@ export const register = async (req, res) => {
   try {
     
     //1. validate req.body
-    userValidator(req.body);
     const { firstName, emailId, password } = req.body;
+    userValidator(req.body);
 
     //2. password hashing
     req.body.password = await bcrypt.hash(password, 10);
 
+    // make sure user is not admin from this route
+    req.body.role = "user"
+
     //3. check for already existing user => NO since - required = true
-    await User.create(req.body);
+    const user = await User.create(req.body);
 
     //4. JWT-authentication => send token in cookies
-    const token = jwt.sign({ emailId }, process.env.JWT_SECRET_KEY, {
+    const token = jwt.sign({ _id : user._id, emailId : emailId , role : "user"}, process.env.JWT_SECRET_KEY, {
       expiresIn: 60 * 60,
     })
     res.cookie("token", token, {
@@ -30,9 +33,45 @@ export const register = async (req, res) => {
     res.status(201).send("User created Successfully")
 
   } catch (err) {
-    res.status(401).send("Error : ", err)
+    res.status(401).send("Error : ", err.message)
   }
 }
+
+
+export const adminRegister = async (req, res) => {
+  try {
+    
+    //1. validate req.body
+    const { firstName, emailId, password } = req.body;
+    userValidator(req.body);
+
+    //2. password hashing
+    req.body.password = await bcrypt.hash(password, 10);
+
+    // make sure user is not admin from this route
+    req.body.role = "admin"
+
+    //3. check for already existing user => NO since - required = true
+    const user = await User.create(req.body);
+
+    //4. JWT-authentication => send token in cookies
+    const token = jwt.sign({ _id : user._id, emailId : emailId , role : "admin"}, process.env.JWT_SECRET_KEY, {
+      expiresIn: 60 * 60,
+    })
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 1000 * 60 * 60
+    })
+
+    //5. send the responce
+    res.status(201).send("User created Successfully")
+
+  } catch (err) {
+    res.status(401).send("Error : ", err.message)
+  }
+}
+
 
 export const login = async (req, res) => {
 
@@ -54,12 +93,14 @@ export const login = async (req, res) => {
             throw new Error("Invalid Credentials...")
         }
 
-        // 4. send JWT token to bbrowser
-        const token = jwt.sign({ emailId }, process.env.JWT_SECRET_KEY, {expiresIn: 60 * 60,})
+        // 4. send JWT token to browser
+        const token = jwt.sign({ _id : user._id, emailId : emailId , role:user.role}, process.env.JWT_SECRET_KEY, {
+        expiresIn: 60 * 60,
+        })
         res.cookie("token", token, {
             httpOnly: true,
             secure: true,
-            maxAge: 1000 * 60 * 60
+            maxAge: 1000 * 60 * 60 //millisec
         })
 
         // 5. send the responce
@@ -70,6 +111,18 @@ export const login = async (req, res) => {
     }
 };
 
-export const logout = async (req, res) => {};
+export const logout = async (req, res) => {
+    try {
+        //1. Clear the JWT token cookie
+        res.cookie("token", "", {
+            httpOnly: true,
+            expires: new Date(0), // This will make the cookie expire immediately
+        })
+
+        res.status(200).send("Logout successful...")
+    } catch (error) {
+        
+    }
+};
 
 export const getProfile = async (req, res) => {};

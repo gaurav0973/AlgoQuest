@@ -1,5 +1,4 @@
 import mongoose, { Schema } from "mongoose"
-const { Schema } = mongoose
 
 
 const userSchema = new Schema({
@@ -37,7 +36,7 @@ const userSchema = new Schema({
         default: "user"
     },
     problemSolved:{
-        type:[string],
+        type:[String],
 
     }
 },{

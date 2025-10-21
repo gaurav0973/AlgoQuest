@@ -13,7 +13,6 @@ export const userValidator = (data)=>{
     }else if(!validator.isStrongPassword(data.password)){
         throw new Error("Enter a strong password")
     }
-
 }
 
 export const loginValidator = (data)=>{
