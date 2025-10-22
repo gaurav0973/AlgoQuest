@@ -143,6 +143,26 @@ export const updateProblem = async(req, res)=>{
 
 }
 
+
+export const deleteProblem = async(req, res) =>{
+    try {
+        const {id} = req.params
+        if(!id){
+            return res.status(400).send("ID is missing")
+        }
+
+        const deletedProblem = await Problem.findByIdAndDelete(id)
+        if(!deleteProblem){
+            return res.status(400).status("Problem is Missing...")
+        }
+
+        res.status(201).send("Problem is Deleted Successfully...")
+
+    } catch (error) {
+        res.status(401).send("Error : " + error)
+    }
+}
+
 export const fetchProblem = async(req, res) =>{
 
 }
@@ -151,10 +171,6 @@ export const getAllProblems = async(req, res) =>{
 
 }
 
-
-export const deleteProblem = async(req, res) =>{
-
-}
 
 export const getSolvedProblems = async(req, res)=>{
 
