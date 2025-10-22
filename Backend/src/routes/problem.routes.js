@@ -1,5 +1,6 @@
 import express from "express"
 import { adminMiddleware } from "../middleware/adminMiddleware.js"
+import { createProblem, deleteProblem, fetchProblem, getAllProblems, getSolvedProblems, updateProblem } from "../controllers/problem.controllers.js"
 
 const problemRouter = express.Router()
 
