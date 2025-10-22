@@ -69,6 +69,80 @@ export const createProblem = async(req, res) =>{
 
 }
 
+
+export const updateProblem = async(req, res)=>{
+
+    try {
+
+        const {id} = req.params
+        console.log(id)
+        if(!id){
+            throw new Error("Missing ID field")
+        }
+
+        const dsaProblem = await Problem.findById(id)
+        if(!dsaProblem){
+            throw new Error("The Problem is not present")
+        }
+
+
+        const {title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator} = req.body
+
+
+        // checking before storing in DB
+        for(const {language, completeCode} of referenceSolution){
+            // source_code :  <- completeCode
+            // language_id :  <- ek function banana padega 
+            // stdin :  <- visibleTestCases me present hai
+            // expected_output :  <- visibleTestCases me present hai
+            const languageId = getLanguageById(language)
+
+            // Batch submissions -> array 
+            const submissions = visibleTestCases.map((testCase)=>({
+                source_code: completeCode,
+                language_id: languageId,
+                stdin : testCase.input,
+                expected_output : testCase.output
+            }))
+
+            const submitResult = await submitBatch(submissions)
+
+            // tokens
+            const resultToken = submitResult.map((value)=> value.token)
+
+            // again api call to get the responce from Judge0
+            const testResult = await submitToken(resultToken)
+
+            // ab apne ko aa gaya hai responce
+            /*
+                "language_id": 46,
+                "stdout": "hello from Bash\n",
+                "status_id": 3,
+                "stderr": null,
+                "token": "db54881d-bcf5-4c7b-a2e3-d33fe7e25de7"
+            */
+           for(const test of testResult){
+            if(test.status_id != 3){
+                return res.status(400).send("Error Occured")
+            }
+           }
+
+        }
+
+        const newProblem = await Problem.findByIdAndUpdate(id, {
+            ...req.body,
+            problemCreator : req.result._id
+        }, {runValidators:true, new:true})
+
+
+        res.status(201).send("Problem Updated Successfully ...")
+        
+    } catch (error) {
+        res.status(401).send("Error : "+ error)
+    }
+
+}
+
 export const fetchProblem = async(req, res) =>{
 
 }
@@ -77,9 +151,6 @@ export const getAllProblems = async(req, res) =>{
 
 }
 
-export const updateProblem = async(req, res)=>{
-
-}
 
 export const deleteProblem = async(req, res) =>{
 

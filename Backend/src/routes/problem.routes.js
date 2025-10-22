@@ -1,6 +1,7 @@
 import express from "express"
 import { adminMiddleware } from "../middleware/adminMiddleware.js"
 import { createProblem, deleteProblem, fetchProblem, getAllProblems, getSolvedProblems, updateProblem } from "../controllers/problem.controllers.js"
+import { userMiddleware } from "../middleware/userMiddleware.js"
 
 const problemRouter = express.Router()
 
@@ -8,17 +9,17 @@ const problemRouter = express.Router()
 problemRouter.post("/create", adminMiddleware, createProblem)
 
 // fetch
-problemRouter.get("/:id", fetchProblem)
-problemRouter.get("/", getAllProblems)
+problemRouter.get("/:id", userMiddleware , fetchProblem)
+problemRouter.get("/", userMiddleware , getAllProblems)
 
 // update -> admin
-problemRouter.patch("/:id", updateProblem)
+problemRouter.put("/:id", adminMiddleware , updateProblem)
 
 // delete -> admin
-problemRouter.delete("/:id", deleteProblem)
+problemRouter.delete("/:id", adminMiddleware , deleteProblem)
 
 // problem solved by user
-problemRouter.get("/user", getSolvedProblems)
+problemRouter.get("/user", userMiddleware, getSolvedProblems)
 
 
 export default problemRouter
