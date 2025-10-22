@@ -1,7 +1,9 @@
-import { getLanguageById, submitBatch } from "../utils/problem.utils.js"
+import { getLanguageById, submitBatch, submitToken } from "../utils/problem.utils.js"
+import Problem from "../models/problem.model.js"
 
 export const createProblem = async(req, res) =>{
     
+    // console.log(req.result._id)
 
     const {title, description, difficulty, tags, visibleTestCases, hiddenTestCases, startCode, referenceSolution, problemCreator} = req.body
 
@@ -9,6 +11,7 @@ export const createProblem = async(req, res) =>{
     try {
 
 
+        // checking before storing in DB
         for(const {language, completeCode} of referenceSolution){
             // source_code :  <- completeCode
             // language_id :  <- ek function banana padega 
@@ -17,20 +20,51 @@ export const createProblem = async(req, res) =>{
             const languageId = getLanguageById(language)
 
             // Batch submissions -> array 
-            const submissions = visibleTestCases.map((input, output)=>({
+            const submissions = visibleTestCases.map((testCase)=>({
                 source_code: completeCode,
                 language_id: languageId,
-                stdin : input,
-                expected_output : output
+                stdin : testCase.input,
+                expected_output : testCase.output
             }))
 
             const submitResult = await submitBatch(submissions)
 
+            // tokens
+            const resultToken = submitResult.map((value)=> value.token)
+
+            // again api call to get the responce from Judge0
+            const testResult = await submitToken(resultToken)
+
+            // ab apne ko aa gaya hai responce
+            /*
+                "language_id": 46,
+                "stdout": "hello from Bash\n",
+                "status_id": 3,
+                "stderr": null,
+                "token": "db54881d-bcf5-4c7b-a2e3-d33fe7e25de7"
+            */
+           for(const test of testResult){
+            if(test.status_id != 3){
+                return res.status(400).send("Error Occured")
+            }
+           }
+
         }
+
+
+        // we can store this in DB now
+        const userProblem = await Problem.create({
+            ...req.body,
+            problemCreator : req.result._id
+        })
+
+
+        res.status(201).send("Problem Saved Succesfully")
+
 
         
     } catch (error) {
-        
+        res.status(400).send("Error : " + error)
     }
 
 }

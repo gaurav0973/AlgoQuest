@@ -21,11 +21,11 @@ export const adminMiddleware = async(req, res, next)=>{
             throw new Error("Invalid Token")
         }
 
-        const result  = User.findById(_id)
+        const result  = await User.findById(_id)
         if(!result){
             throw new Error("User does not exist")
         }
-
+        // console.log("Result : " + result)
         req.result = result
         next()
 
