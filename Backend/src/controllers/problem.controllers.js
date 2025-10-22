@@ -163,12 +163,42 @@ export const deleteProblem = async(req, res) =>{
     }
 }
 
-export const fetchProblem = async(req, res) =>{
+export const getProblemById = async(req, res) =>{
+    try {
+        const {id} = req.params
+        // console.log(id)
+        if(!id){
+            return res.status(400).send("ID is missing...")
+        }
 
+        const problem = await Problem.findById(id)
+        // console.log(problem)
+        if(!problem){
+            return res.status(404).send("Missing Problem")
+        }
+
+        res.status(201).send(problem)
+
+        
+    } catch (error) {
+        res.status(400).send("Error : ", error)
+    }
 }
 
 export const getAllProblems = async(req, res) =>{
+    try {
 
+        const problems = await Problem.find({})
+        if(problems.length === 0){
+            return res.status(404).send("Missing Problems")
+        }
+
+        res.status(201).send(problems)
+
+        
+    } catch (error) {
+        res.status(400).send("Error : ", error)
+    }
 }
 
 

@@ -6,6 +6,7 @@ import User from "../models/user.model.js"
 export const userMiddleware = async(req, res, next)=>{
     try {
         const {token} = req.cookies
+        // console.log(token)
         if(!token){
             throw new Error("Token is not present")
         }
@@ -18,10 +19,10 @@ export const userMiddleware = async(req, res, next)=>{
         }
 
         const result  = await User.findById(_id)
+        // console.log(result._id)
         if(!result){
             throw new Error("User does not exist")
         }
-        // console.log(result)
         req.result = result
         next()
 
