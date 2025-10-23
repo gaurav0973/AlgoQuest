@@ -6,6 +6,7 @@ import {
   getAllProblems,
   getProblemById,
   getSolvedProblems,
+  submittedProblem,
   updateProblem,
 } from "../controllers/problem.controllers.js";
 import { userMiddleware } from "../middleware/userMiddleware.js";
@@ -17,6 +18,8 @@ problemRouter.post("/create", adminMiddleware, createProblem);
 
 // problem solved by user (must be before /:id route)
 problemRouter.get("/user", userMiddleware, getSolvedProblems);
+
+problemRouter.get("/submittedProblem/:pid", userMiddleware, submittedProblem)
 
 // fetch
 problemRouter.get("/:id", userMiddleware, getProblemById);

@@ -5,6 +5,7 @@ import {
 } from "../utils/problem.utils.js";
 import Problem from "../models/problem.model.js";
 import User from "../models/user.model.js";
+import Submission from "../models/submission.model.js";
 
 export const createProblem = async (req, res) => {
   // console.log(req.result._id)
@@ -219,3 +220,22 @@ export const getSolvedProblems = async (req, res) => {
     res.status(500).send(`Server Error: ${error.message}`);
   }
 };
+
+
+export const submittedProblem = async(req, res) =>{
+    try {
+        const userId = req.result._id
+        const problemId = req.params.pid
+
+        const submissionByUser = await Submission.find({userId, problemId})
+
+        if(submissionByUser.length === 0){
+            res.status(201).send("No submissions yet...")
+        }
+
+        res.status(201).send(submissionByUser);
+
+    } catch (error) {
+        res.status(500).send(`Server Error: ${error.message}`)
+    }
+}

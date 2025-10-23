@@ -1,3 +1,4 @@
+import Submission from "../models/submission.model.js";
 import User from "../models/user.model.js";
 import { loginValidator, userValidator } from "../utils/validators.js";
 import bcrypt from "bcrypt";
@@ -124,5 +125,23 @@ export const logout = async (req, res) => {
         
     }
 };
+
+
+export const deleteProfile = async(req, res)=>{
+  try {
+    const userId = req.result._id
+
+    // delete from userSchema
+    await User.findByIdAndDelete(userId)
+
+    // delete from ssubmission table too
+    await Submission.deleteMany({userId})
+
+    res.status(201).send("Deleted successfully...")
+
+  } catch (error) {
+    res.status(401).send("Error : "+ error)
+  }
+}
 
 export const getProfile = async (req, res) => {};

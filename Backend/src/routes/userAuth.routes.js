@@ -19,6 +19,9 @@ authRouter.post("/login", login)
 // logout
 authRouter.get("/logout", userMiddleware, logout)
 
+// deleteProfile
+// authRouter.delete("/delete")
+
 // getProfile
 // authRouter.get("/getProfile",userMiddleware, getProfile)
 

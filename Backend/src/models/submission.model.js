@@ -51,6 +51,9 @@ const submissionSchema = new Schema({
     timestamps : true
 })
 
+// compound index
+//  1 => ascending order
+submissionSchema.index({userId : 1, problemId : 1})
 
 
 const Submission = mongoose.model("submission", submissionSchema)
