@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser"
 import connectDB from "./config/db.js"
 import authRouter from "./routes/userAuth.routes.js"
 import problemRouter from "./routes/problem.routes.js"
+import submitRoute from "./routes/submission.routes.js"
 
 
 
@@ -23,6 +24,7 @@ app.use(express.urlencoded({extended:true}))
 
 app.use("/user", authRouter)
 app.use("/problem", problemRouter)
+app.use("/submission", submitRoute)
 
 
 

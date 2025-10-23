@@ -34,6 +34,7 @@ export const createProblem = async(req, res) =>{
 
             // again api call to get the responce from Judge0
             const testResult = await submitToken(resultToken)
+            // console.log(testResult)
 
             // ab apne ko aa gaya hai responce
             /*
@@ -64,7 +65,7 @@ export const createProblem = async(req, res) =>{
 
         
     } catch (error) {
-        res.status(400).send("Error : " + error)
+        res.status(400).send("Error : " + error.message)
     }
 
 }
@@ -171,7 +172,7 @@ export const getProblemById = async(req, res) =>{
             return res.status(400).send("ID is missing...")
         }
 
-        const problem = await Problem.findById(id)
+        const problem = await Problem.findById(id).select("_id title description difficulty tags visibleTestCases startCode referenceSolution")
         // console.log(problem)
         if(!problem){
             return res.status(404).send("Missing Problem")
@@ -188,7 +189,7 @@ export const getProblemById = async(req, res) =>{
 export const getAllProblems = async(req, res) =>{
     try {
 
-        const problems = await Problem.find({})
+        const problems = await Problem.find({}).select("_id title difficulty tags")
         if(problems.length === 0){
             return res.status(404).send("Missing Problems")
         }
