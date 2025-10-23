@@ -24,10 +24,12 @@ export const userMiddleware = async(req, res, next)=>{
             throw new Error("User does not exist")
         }
         req.result = result
+        // console.log("Result : ", req.result)
         next()
 
 
     } catch (error) {
-        res.send("Error : ", error.message)
+        res.send(`Error: ${error.message}`)
+
     }
 }

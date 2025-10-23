@@ -1,25 +1,31 @@
-import express from "express"
-import { adminMiddleware } from "../middleware/adminMiddleware.js"
-import { createProblem, deleteProblem, getAllProblems, getProblemById, getSolvedProblems, updateProblem } from "../controllers/problem.controllers.js"
-import { userMiddleware } from "../middleware/userMiddleware.js"
+import express from "express";
+import { adminMiddleware } from "../middleware/adminMiddleware.js";
+import {
+  createProblem,
+  deleteProblem,
+  getAllProblems,
+  getProblemById,
+  getSolvedProblems,
+  updateProblem,
+} from "../controllers/problem.controllers.js";
+import { userMiddleware } from "../middleware/userMiddleware.js";
 
-const problemRouter = express.Router()
+const problemRouter = express.Router();
 
 // create  -> admin
-problemRouter.post("/create", adminMiddleware, createProblem)
+problemRouter.post("/create", adminMiddleware, createProblem);
+
+// problem solved by user (must be before /:id route)
+problemRouter.get("/user", userMiddleware, getSolvedProblems);
 
 // fetch
-problemRouter.get("/:id", userMiddleware , getProblemById)
-problemRouter.get("/", userMiddleware , getAllProblems)
+problemRouter.get("/:id", userMiddleware, getProblemById);
+problemRouter.get("/", userMiddleware, getAllProblems);
 
 // update -> admin
-problemRouter.put("/:id", adminMiddleware , updateProblem)
+problemRouter.put("/:id", adminMiddleware, updateProblem);
 
 // delete -> admin
-problemRouter.delete("/:id", adminMiddleware , deleteProblem)
+problemRouter.delete("/:id", adminMiddleware, deleteProblem);
 
-// problem solved by user
-problemRouter.get("/user", userMiddleware, getSolvedProblems)
-
-
-export default problemRouter
+export default problemRouter;

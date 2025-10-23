@@ -105,6 +105,14 @@ export const userSubmission = async(req, res)=>{
         submittedResult.memory = memory
         await submittedResult.save()
 
+
+        // step-5 => propogeting in user schema that I have solved this problem
+        if(!req.result.problemSolved.includes(problemId)){
+            req.result.problemSolved.push(problemId)
+            await req.result.save()
+        }
+
+
         res.status(201).send(submittedResult)
 
         
