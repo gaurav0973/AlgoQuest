@@ -121,3 +121,42 @@ export const userSubmission = async(req, res)=>{
 
     }
 }
+
+
+export const runCode = async(req, res)=>{
+    try {
+        const userId = req.result._id
+        const problemId = req.params.id
+        const {language, code} = req.body
+
+        if(!userId || !problemId || !code || !language){
+            return res.status(400).send("Some field is missing")
+        }
+
+        // fetch problem from db => to know hiddenTestCases
+        // console.log(problemId)
+        const problem = await Problem.findById(problemId)
+        // console.log("Problem : " + problem)
+
+
+
+        // step-1 => submit code to judge0
+        const languageId = getLanguageById(language)
+        const submissions = problem.visibleTestCases.map((testCase)=>({
+                source_code: code,
+                language_id: languageId,
+                stdin : testCase.input,
+                expected_output : testCase.output
+        }))
+        const submitResult = await submitBatch(submissions)
+        const resultToken = submitResult.map((value)=> value.token)
+        const testResult = await submitToken(resultToken)
+
+        res.status(201).send(testResult)
+
+        
+    } catch (error) {
+        res.status(500).send(`Internal Server Error: ${error.message}`);
+
+    }
+}
