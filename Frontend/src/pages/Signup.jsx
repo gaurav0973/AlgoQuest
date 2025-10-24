@@ -2,6 +2,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod'; 
+import { useDispatch, useSelector } from 'react-redux';
+import { useNavigate } from 'react-router';
+import { registerUser } from '../utils/authSlice';
+import { useEffect } from 'react';
 
 const signupSchema = z.object({
     firstName:  z.string().min(3, "Name should be atleast 3 characters"),
@@ -10,15 +14,30 @@ const signupSchema = z.object({
 })
 
 function Signup() {
+
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const {isAuthenticated, loading, error} = useSelector((state) => state.auth)
+
     const {register,handleSubmit,formState: { errors }} = useForm({
         resolver : zodResolver(signupSchema)
     });
+
+    useEffect(()=> {
+      if(isAuthenticated){
+        navigate("/")
+      }
+    }, [isAuthenticated, navigate])
+
+    const onSubmit = (data) => {
+      dispatch(registerUser(data))
+    }
 
   return (
     <div className='flex justify-center items-center min-h-screen'>
       <div className='w-full max-w-md flex flex-col items-center space-y-6'>
         <h1 className='text-2xl font-bold'>AlgoQuest</h1>
-        <form className='w-full flex flex-col space-y-4' onSubmit={handleSubmit((data) => console.log(data))}>
+        <form className='w-full flex flex-col space-y-4' onSubmit={handleSubmit(onSubmit)}>
           
           {/* First Name Field */}
           <div className="form-control w-full">

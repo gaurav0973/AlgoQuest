@@ -6,7 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { checkAuth } from "./utils/authSlice.js";
 
-
 function App() {
 
 
@@ -15,15 +14,15 @@ function App() {
 
   useEffect(()=>{
     dispatch(checkAuth())
-  }, [])
+  }, [dispatch])
 
 
   return (
     <>  
       <Routes>
-        <Route path="/" element={<Home/>} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/signup" />} />
+        <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
+        <Route path="/signup" element={isAuthenticated ? <Navigate to="/" /> : <Signup />} />
       </Routes>
     </>
   )
