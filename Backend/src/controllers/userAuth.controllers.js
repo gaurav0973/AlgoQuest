@@ -40,7 +40,11 @@ export const register = async (req, res) => {
       .json(
         new ApiResponse(
           201,
-          { user: { id: user._id, email: user.emailId, role: user.role } },
+          { 
+            user: 
+            { _id: user._id, emailId: user.emailId, role: user.role,
+              firstName: user.firstName} 
+        },
           "User registered successfully"
         )
       );
@@ -84,7 +88,11 @@ export const adminRegister = async (req, res) => {
       .json(
         new ApiResponse(
           201,
-          { user: { id: user._id, email: user.emailId, role: user.role } },
+          { 
+            user: 
+            { _id: user._id, emailId: user.emailId, role: user.role,
+              firstName: user.firstName} 
+        },
           "Admin registered successfully"
         )
       );
@@ -129,12 +137,10 @@ export const login = async (req, res) => {
     res.status(200).json(
       new ApiResponse(
         200,
-        {
-          user: {
-            id: user._id,
-            email: user.emailId,
-            role: user.role,
-          },
+        { 
+            user: 
+            { _id: user._id, emailId: user.emailId, role: user.role,
+              firstName: user.firstName} 
         },
         "Login successful"
       )
@@ -176,4 +182,17 @@ export const deleteProfile = async (req, res) => {
   }
 };
 
-export const getProfile = async (req, res) => {};
+export const getProfile = async (req, res) => {
+    try {
+      const userId = req.result._id;
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json(new ApiResponse(404, null, "User not found"));
+      }
+      res.status(200).json(new ApiResponse(200, { user: 
+            { _id: user._id, emailId: user.emailId, role: user.role,
+              firstName: user.firstName} }, "Profile fetched successfully"));
+    } catch (error) {
+      res.status(500).json(new ApiResponse(500, null, "Internal Server Error"));
+    }
+};

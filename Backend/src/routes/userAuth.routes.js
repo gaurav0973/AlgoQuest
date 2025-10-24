@@ -23,7 +23,7 @@ authRouter.get("/logout", userMiddleware, logout)
 // authRouter.delete("/delete")
 
 // getProfile
-// authRouter.get("/getProfile",userMiddleware, getProfile)
+authRouter.get("/check",userMiddleware, getProfile)
 
 
 export default authRouter
