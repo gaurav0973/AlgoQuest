@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
 import axiosClient from './axiosClient';
 
@@ -9,7 +8,7 @@ export const registerUser = createAsyncThunk(
       const response = await axiosClient.post('/user/register', userData);
       return response.data.data.user;
     } catch (error) {
-      return rejectWithValue(error);
+      return rejectWithValue(error.response?.data?.message || "Something went wrong");
     }
   }
 )
