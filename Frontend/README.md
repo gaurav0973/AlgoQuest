@@ -10,3 +10,5 @@ This is the frontend codebase for the AlgoQuest application. It is built using R
 - DaisyUI : [DaisyUI Documentation](https://daisyui.com/docs/install/vite/)
 - React Hook Form : [React Hook Form Documentation](https://www.npmjs.com/package/react-hook-form)
 - Zod : [Zod Documentation](https://zod.dev/)
+- @hookform/resolvers : [@hookform/resolvers Documentation](https://www.npmjs.com/package/@hookform/resolvers)
+- Redux 

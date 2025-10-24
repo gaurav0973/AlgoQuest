@@ -1,57 +1,67 @@
-import Problem from "../models/problem.model.js"
-import Submission from "../models/submission.model.js"
-import { getLanguageById, submitBatch, submitToken } from "../utils/problem.utils.js"
+import Problem from "../models/problem.model.js";
+import Submission from "../models/submission.model.js";
+import {
+  getLanguageById,
+  submitBatch,
+  submitToken,
+} from "../utils/problem.utils.js";
+import { ApiResponse } from "../utils/api-responce.js";
 
+export const userSubmission = async (req, res) => {
+  try {
+    // console.log("this is the end")
+    // console.log(req.result._id)
+    const userId = req.result._id;
+    // console.log(req.params)
+    const problemId = req.params.id;
+    // console.log(problemId)
+    // console.log(req.body)
+    const { language, code } = req.body;
 
-export const userSubmission = async(req, res)=>{
-    try {
-        // console.log("this is the end")
-        // console.log(req.result._id)
-        const userId = req.result._id
-        // console.log(req.params)
-        const problemId = req.params.id
-        // console.log(problemId)
-        // console.log(req.body)
-        const {language, code} = req.body
+    // console.log(userId)
 
-        // console.log(userId)
+    if (!userId || !problemId || !code || !language) {
+      return res.status(400).send("Some field is missing");
+    }
 
-        if(!userId || !problemId || !code || !language){
-            return res.status(400).send("Some field is missing")
-        }
+    // fetch problem from db => to know hiddenTestCases
+    // console.log(problemId)
+    const problem = await Problem.findById(problemId);
+    // console.log("Problem : " + problem)
 
-        // fetch problem from db => to know hiddenTestCases
-        // console.log(problemId)
-        const problem = await Problem.findById(problemId)
-        // console.log("Problem : " + problem)
+    // step-1 => submit code in DB
+    // console.log(problem.hiddenTestCases)
+    const submittedResult = await Submission.create({
+      userId,
+      problemId,
+      code,
+      language,
+      status: "pending",
+      testCaseTotal: problem.hiddenTestCases.length,
+    });
+    // console.log("Submitted  Result "+submittedResult)
 
-        // step-1 => submit code in DB
-        // console.log(problem.hiddenTestCases)
-        const submittedResult = await Submission.create({userId, problemId, code, language, status: "pending", testCaseTotal : problem.hiddenTestCases.length})
-        // console.log("Submitted  Result "+submittedResult)
+    // step-2 => submit code to judge0
+    const languageId = getLanguageById(language);
+    // console.log(languageId)
+    const submissions = problem.hiddenTestCases.map((testCase) => ({
+      source_code: code,
+      language_id: languageId,
+      stdin: testCase.input,
+      expected_output: testCase.output,
+    }));
+    // console.log(submissions)
+    const submitResult = await submitBatch(submissions);
+    // console.log(submitResult)
 
+    // tokens
+    const resultToken = submitResult.map((value) => value.token);
+    // console.log(resultToken)
 
-        // step-2 => submit code to judge0
-        const languageId = getLanguageById(language)
-        // console.log(languageId)
-        const submissions = problem.hiddenTestCases.map((testCase)=>({
-                source_code: code,
-                language_id: languageId,
-                stdin : testCase.input,
-                expected_output : testCase.output
-        }))
-        // console.log(submissions)
-        const submitResult = await submitBatch(submissions)
-        // console.log(submitResult)
-
-        // tokens
-        const resultToken = submitResult.map((value)=> value.token)
-        // console.log(resultToken)
-
-        // again api call to get the responce from Judge0
-        const testResult = await submitToken(resultToken)
-        // console.log(testResult)
-        /* => apna responce ka format for every test case [{}, {}. {}, {} ...]
+    // again api call to get the responce from Judge0
+    const testResult = await submitToken(resultToken);
+    // console.log(testResult)
+    /* => apna responce ka format for every test case [{}, {}. {}, {} ...]
                 language_id: 62,
                 stdin: '7',
                 expected_output: 'true',
@@ -71,92 +81,98 @@ export const userSubmission = async(req, res)=>{
                 stack_limit: 64000,
         */
 
-        // Step-3 => update the submission in db
+    // Step-3 => update the submission in db
 
-        let testCasesPassed = 0
-        let runtime = 0
-        let memory = 0
-        let status = "accepted"
-        let errorMessage = null
+    let testCasesPassed = 0;
+    let runtime = 0;
+    let memory = 0;
+    let status = "accepted";
+    let errorMessage = null;
 
-
-        for(const test of testResult){
-            if(test.status_id === 3){
-                testCasesPassed++
-                runtime = runtime + parseFloat(test.time)
-                memory = Math.max(memory, test.memory)
-            }
-            else{
-                if(test.status_id === 4){
-                    status = "error"
-                }else{
-                    status = "wrong"
-                }
-                errorMessage = test.stderr
-            }
+    for (const test of testResult) {
+      if (test.status_id === 3) {
+        testCasesPassed++;
+        runtime = runtime + parseFloat(test.time);
+        memory = Math.max(memory, test.memory);
+      } else {
+        if (test.status_id === 4) {
+          status = "error";
+        } else {
+          status = "wrong";
         }
-
-
-        // step-4 => store the rersult in db
-        submittedResult.status = status
-        submittedResult.testCasePassed = testCasesPassed
-        submittedResult.errorMessage = errorMessage
-        submittedResult.runtime = runtime
-        submittedResult.memory = memory
-        await submittedResult.save()
-
-
-        // step-5 => propogeting in user schema that I have solved this problem
-        if(!req.result.problemSolved.includes(problemId)){
-            req.result.problemSolved.push(problemId)
-            await req.result.save()
-        }
-
-
-        res.status(201).send(submittedResult)
-
-        
-    } catch (error) {
-        res.status(500).send(`Internal Server Error: ${error.message}`);
-
+        errorMessage = test.stderr;
+      }
     }
-}
 
+    // step-4 => store the rersult in db
+    submittedResult.status = status;
+    submittedResult.testCasePassed = testCasesPassed;
+    submittedResult.errorMessage = errorMessage;
+    submittedResult.runtime = runtime;
+    submittedResult.memory = memory;
+    await submittedResult.save();
 
-export const runCode = async(req, res)=>{
-    try {
-        const userId = req.result._id
-        const problemId = req.params.id
-        const {language, code} = req.body
-
-        if(!userId || !problemId || !code || !language){
-            return res.status(400).send("Some field is missing")
-        }
-
-        // fetch problem from db => to know hiddenTestCases
-        // console.log(problemId)
-        const problem = await Problem.findById(problemId)
-        // console.log("Problem : " + problem)
-
-
-
-        // step-1 => submit code to judge0
-        const languageId = getLanguageById(language)
-        const submissions = problem.visibleTestCases.map((testCase)=>({
-                source_code: code,
-                language_id: languageId,
-                stdin : testCase.input,
-                expected_output : testCase.output
-        }))
-        const submitResult = await submitBatch(submissions)
-        const resultToken = submitResult.map((value)=> value.token)
-        const testResult = await submitToken(resultToken)
-
-        res.status(201).send(testResult)
-
-        
-    } catch (error) {
-        res.status(500).send(`Internal Server Error: ${error.message}`);
-
+    // step-5 => propogeting in user schema that I have solved this problem
+    if (!req.result.problemSolved.includes(problemId)) {
+      req.result.problemSolved.push(problemId);
+      await req.result.save();
     }
-}
+
+    res
+      .status(201)
+      .json(
+        new ApiResponse(
+          201,
+          { submission: submittedResult },
+          "Code submitted successfully"
+        )
+      );
+  } catch (error) {
+    res
+      .status(500)
+      .json(
+        new ApiResponse(500, null, `Internal Server Error: ${error.message}`)
+      );
+  }
+};
+
+export const runCode = async (req, res) => {
+  try {
+    const userId = req.result._id;
+    const problemId = req.params.id;
+    const { language, code } = req.body;
+
+    if (!userId || !problemId || !code || !language) {
+      return res.status(400).send("Some field is missing");
+    }
+
+    // fetch problem from db => to know hiddenTestCases
+    // console.log(problemId)
+    const problem = await Problem.findById(problemId);
+    // console.log("Problem : " + problem)
+
+    // step-1 => submit code to judge0
+    const languageId = getLanguageById(language);
+    const submissions = problem.visibleTestCases.map((testCase) => ({
+      source_code: code,
+      language_id: languageId,
+      stdin: testCase.input,
+      expected_output: testCase.output,
+    }));
+    const submitResult = await submitBatch(submissions);
+    const resultToken = submitResult.map((value) => value.token);
+    const testResult = await submitToken(resultToken);
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          { results: testResult },
+          "Code executed successfully"
+        )
+      );
+  } catch (error) {
+    res.status(500).json(new ApiResponse(500, null, error.message));
+  }
+};
