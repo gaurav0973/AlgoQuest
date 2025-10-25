@@ -3,9 +3,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { registerUser } from "../utils/authSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const signupSchema = z.object({
   firstName: z.string().min(3, "Name should be atleast 3 characters"),
@@ -23,9 +23,11 @@ const signupSchema = z.object({
 });
 
 function Signup() {
+
+  const [showPassword, setShowPassword] = useState(false)
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isAuthenticated, loading, error } = useSelector(
+  const { isAuthenticated, loading } = useSelector(
     (state) => state.auth
   );
 
@@ -98,12 +100,22 @@ function Signup() {
             <label className="label">
               <span className="label-text">Password</span>
             </label>
-            <input
-              {...register("password")}
-              placeholder="Enter password"
-              type="password"
-              className="input input-bordered w-full"
-            />
+            <div className="relative">
+              <input
+                {...register("password")}
+                placeholder="********"
+                type={showPassword ? "text" : "password"}
+                className="input input-bordered w-full"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              >
+                {showPassword ? "🙈" : "👁️"}
+              </button>
+            </div>
+
             {errors.password && (
               <label className="label">
                 <span className="label-text-alt text-error">
@@ -119,9 +131,14 @@ function Signup() {
             disabled={loading}
             className="btn btn-primary w-full"
           >
-            {loading ? "Signing up..." : "Submit"}
+            {loading ? "Signing up..." : "Sign Up"}
           </button>
         </form>
+
+
+        <div>
+          <p>Already have an account? <Link to="/login" className="text-blue-500">Login</Link></p>
+        </div>
       </div>
     </div>
   );

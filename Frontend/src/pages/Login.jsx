@@ -3,20 +3,30 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod'; 
 import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router';
+import { Link, useNavigate } from 'react-router';
 import { loginUser } from '../utils/authSlice';
 import { useEffect } from 'react';
 
 const loginSchema = z.object({
     emailId: z.string().email("Enter a valid email"),
-    password: z.string().min(8, "Password should be atleast 8 characters")
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/[0-9]/, "Password must contain at least one number")
+    .regex(
+      /[^A-Za-z0-9]/,
+      "Password must contain at least one special character"
+    )
+    
 })
 
 function Login() {
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
-    const {isAuthenticated, loading, error} = useSelector((state) => state.auth)
+    const {isAuthenticated, loading} = useSelector((state) => state.auth)
 
 
 
@@ -84,6 +94,10 @@ function Login() {
             Login
           </button>
         </form>
+
+        <div>
+          <p>Don't have an account? <Link to="/signup" className="text-blue-500">Sign Up</Link></p>
+        </div>
       </div>
     </div>
   )

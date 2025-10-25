@@ -9,12 +9,21 @@ import { checkAuth } from "./utils/authSlice.js";
 function App() {
 
 
-  const {isAuthenticated} = useSelector((state) => state.auth);
+  const {isAuthenticated, loading} = useSelector((state) => state.auth);
   const dispatch = useDispatch()
 
   useEffect(()=>{
     dispatch(checkAuth())
   }, [dispatch])
+
+
+  if (loading) {
+  return (
+    <div className="flex justify-center items-center min-h-screen">
+      <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    </div>
+  );
+}
 
 
   return (
