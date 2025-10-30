@@ -10,7 +10,9 @@ import AdminPanel from "./pages/AdminPanel.jsx";
 function App() {
 
 
-  const {isAuthenticated, loading} = useSelector((state) => state.auth);
+  const {isAuthenticated, loading, user} = useSelector((state) => state.auth);
+  console.log("Is Authenticated : ", isAuthenticated)
+  console.log("User role : ", user?.role)
   const dispatch = useDispatch()
 
   useEffect(()=>{
@@ -30,10 +32,35 @@ function App() {
   return (
     <>  
       <Routes>
-        <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/signup" />} />
-        <Route path="/login" element={isAuthenticated ? <Navigate to="/" /> : <Login />} />
-        <Route path="/signup" element={isAuthenticated ? <Navigate to="/" /> : <Signup />} />
-        <Route path="/admin" element={<AdminPanel />} />
+        <Route 
+          path="/" 
+          element={
+            isAuthenticated ? <Home /> : <Navigate to="/signup" />
+          } 
+        />
+        <Route 
+          path="/login" 
+          element={
+            isAuthenticated 
+              ? <Navigate to="/" />: <Login />
+          } 
+        />
+        <Route 
+          path="/signup" 
+          element={
+            isAuthenticated 
+              ? <Navigate to="/" />
+              : <Signup />
+          } 
+        />
+        <Route 
+          path="/admin" 
+          element={
+            (isAuthenticated && user?.role === "admin") 
+              ? <AdminPanel /> 
+              : <Navigate to="/" />
+          } 
+        />
       </Routes>
     </>
   )
