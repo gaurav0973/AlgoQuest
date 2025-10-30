@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from "react-redux"
 import { logoutUser } from "../utils/authSlice"
 import { useEffect, useState } from "react"
+import { Link } from "react-router";
 import axiosClient from "../utils/axiosClient"
 
 // Backend enums for problems
@@ -202,7 +203,7 @@ function Home() {
                   <div className="card-body">
                     <div className="flex justify-between items-start">
                       <h2 className="card-title text-lg font-bold hover:text-primary cursor-pointer">
-                        {problem.title}
+                        <Link to={`/problem/${problem._id}`}>{problem.title}</Link>
                       </h2>
                       <div
                         className={`badge badge-${DIFFICULTY_LEVELS[problem.difficulty.toLowerCase()]?.color || "info"} gap-2`}
@@ -253,7 +254,7 @@ function Home() {
 
                     <div className="card-actions justify-end mt-4">
                       <button className="btn btn-primary btn-sm">
-                        Solve Challenge
+                        <Link to={`/problem/${problem._id}`}>Solve Challenge</Link>
                       </button>
                     </div>
                   </div>
