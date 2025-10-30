@@ -1,15 +1,15 @@
-import { useDispatch, useSelector } from "react-redux"
-import { logoutUser } from "../utils/authSlice"
-import { useEffect, useState } from "react"
+import { useDispatch, useSelector } from "react-redux";
+import { logoutUser } from "../utils/authSlice";
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
-import axiosClient from "../utils/axiosClient"
+import axiosClient from "../utils/axiosClient";
 
 // Backend enums for problems
 const DIFFICULTY_LEVELS = {
   easy: { label: "Easy", color: "success" },
   medium: { label: "Medium", color: "warning" },
   hard: { label: "Hard", color: "error" },
-}
+};
 
 const PROBLEM_TAGS = {
   array: { label: "Array", icon: "M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" },
@@ -25,7 +25,7 @@ const PROBLEM_TAGS = {
     label: "Dynamic Programming",
     icon: "M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z",
   },
-}
+};
 
 function Home() {
   const dispatch = useDispatch();
@@ -92,12 +92,28 @@ function Home() {
   return (
     <div className="min-h-screen bg-base-100">
       {/* Navbar */}
-      <div className="w-full navbar bg-base-300 px-8 flex justify-between items-center shadow-lg">
-        <a className="btn btn-ghost normal-case text-xl">AlgoQuest</a>
-        <div>
-          <span className="mr-4 font-bold">
+      <div className="w-full navbar bg-base-300 px-8 shadow-lg flex justify-between items-center relative">
+        {/* Left: Logo */}
+        <div className="flex items-center">
+          <a className="btn btn-ghost normal-case text-xl">AlgoQuest</a>
+        </div>
+
+        {/* Center: User Name */}
+        <div className="absolute left-1/2 transform -translate-x-1/2">
+          <span className="text-lg font-semibold">
             Hello, {user?.firstName || "User"}
           </span>
+        </div>
+
+        {/* Right: Buttons */}
+        <div className="flex items-center space-x-4">
+          {user?.role === "admin" && (
+            <Link to="/admin">
+              <button className="btn btn-outline btn-secondary">
+                Admin Panel
+              </button>
+            </Link>
+          )}
           <button
             className="btn btn-outline btn-primary"
             onClick={handleLogout}
@@ -203,7 +219,9 @@ function Home() {
                   <div className="card-body">
                     <div className="flex justify-between items-start">
                       <h2 className="card-title text-lg font-bold hover:text-primary cursor-pointer">
-                        <Link to={`/problem/${problem._id}`}>{problem.title}</Link>
+                        <Link to={`/problem/${problem._id}`}>
+                          {problem.title}
+                        </Link>
                       </h2>
                       <div
                         className={`badge badge-${DIFFICULTY_LEVELS[problem.difficulty.toLowerCase()]?.color || "info"} gap-2`}
@@ -254,7 +272,9 @@ function Home() {
 
                     <div className="card-actions justify-end mt-4">
                       <button className="btn btn-primary btn-sm">
-                        <Link to={`/problem/${problem._id}`}>Solve Challenge</Link>
+                        <Link to={`/problem/${problem._id}`}>
+                          Solve Challenge
+                        </Link>
                       </button>
                     </div>
                   </div>
@@ -277,4 +297,4 @@ function Home() {
   );
 }
 
-export default Home
+export default Home;
