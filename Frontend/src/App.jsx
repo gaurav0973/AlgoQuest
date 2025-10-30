@@ -6,6 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { checkAuth } from "./utils/authSlice.js";
 import AdminPanel from "./pages/AdminPanel.jsx";
+import ProblemPage from "./pages/ProblemPage.jsx";
 
 function App() {
 
@@ -52,6 +53,10 @@ function App() {
               ? <Navigate to="/" />
               : <Signup />
           } 
+        />
+        <Route
+          path="/problem/:problemId"
+          element={<ProblemPage />}
         />
         <Route 
           path="/admin" 
