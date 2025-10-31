@@ -30,9 +30,7 @@ const videoSchema = new Schema({
         type: Number,
         required: true
     }
-}, {
-    timestamps:true
-})
+}, {timestamps:true})
 
 const VideoSolution = mongoose.model("videoSolution", videoSchema)
 export default VideoSolution
