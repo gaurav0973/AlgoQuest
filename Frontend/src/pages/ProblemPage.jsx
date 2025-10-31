@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useParams, Link } from "react-router";
 import Editor from "@monaco-editor/react";
 import axiosClient from "../utils/axiosClient";
+import SubmissionHistory from "./SubmissionHistory";
 
 const LANGUAGE_OPTIONS = [
   { id: "javascript", name: "JavaScript", languageId: 63 },
@@ -149,10 +150,13 @@ function ProblemPage() {
     setOutput(null);
 
     try {
-      const response = await axiosClient.post(`/submission/submit/${problemId}`, {
-        language: selectedLanguage.id,
-        code,
-      });
+      const response = await axiosClient.post(
+        `/submission/submit/${problemId}`,
+        {
+          language: selectedLanguage.id,
+          code,
+        }
+      );
 
       if (response?.data?.statusCode === 201) {
         const submission = response.data.data.submission;
@@ -316,7 +320,7 @@ function ProblemPage() {
             ) : (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Your Submissions</h3>
-                {/* TODO: Add submissions list here */}
+                <SubmissionHistory problemId={problemId} />
               </div>
             )}
           </div>
