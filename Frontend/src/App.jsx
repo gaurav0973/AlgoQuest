@@ -7,6 +7,9 @@ import { useEffect } from "react";
 import { checkAuth } from "./utils/authSlice.js";
 import AdminPanel from "./pages/AdminPanel.jsx";
 import ProblemPage from "./pages/ProblemPage.jsx";
+import AdminCreate from "./pages/AdminCreate.jsx";
+import AdminUpdate from "./pages/AdminUpdate.jsx";
+import AdminDelete from "./pages/AdminDelete.jsx";
 
 function App() {
 
@@ -65,6 +68,30 @@ function App() {
               ? <AdminPanel /> 
               : <Navigate to="/" />
           } 
+        />
+        <Route
+          path="/admin/create"
+          element={
+            (isAuthenticated && user?.role === "admin")
+              ? <AdminCreate />
+              : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/admin/update"
+          element={
+            (isAuthenticated && user?.role === "admin")
+              ? <AdminUpdate />
+              : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/admin/delete"
+          element={
+            (isAuthenticated && user?.role === "admin")
+              ? <AdminDelete />
+              : <Navigate to="/" />
+          }
         />
       </Routes>
     </>
