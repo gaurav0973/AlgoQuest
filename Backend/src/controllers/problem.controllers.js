@@ -7,6 +7,7 @@ import Problem from "../models/problem.model.js";
 import User from "../models/user.model.js";
 import Submission from "../models/submission.model.js";
 import { ApiResponse } from "../utils/api-responce.js";
+import VideoSolution from "../models/videoSolution.model.js";
 
 export const createProblem = async (req, res) => {
   // console.log(req.result._id)
@@ -217,7 +218,18 @@ export const getProblemById = async (req, res) => {
         .json(new ApiResponse(404, null, "Problem not found"));
     }
 
-    res
+    // videos yahi par fetrch kar le id bhej do 
+    const video = await VideoSolution.findById({problemId : id})
+    if(video){
+        problem.secureUrl = video.secureUrl
+        problem.thumbnailUrl = video.thumbnailUrl
+        problem.cloudinaryPublicId = video.cloudinaryPublicId
+        problem.duration = video.duration
+        return res.status(200)
+        .json(new ApiResponse(200, { problem }, "Problem fetched successfully"));
+    }
+
+    return res
       .status(200)
       .json(new ApiResponse(200, { problem }, "Problem fetched successfully"));
   } catch (error) {
