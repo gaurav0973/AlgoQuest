@@ -16,11 +16,7 @@ function AdminDelete() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this problem? This action cannot be undone."
-      )
-    ) {
+    if (!window.confirm("Are you sure you want to delete this problem? This action cannot be undone.")) {
       return;
     }
 
