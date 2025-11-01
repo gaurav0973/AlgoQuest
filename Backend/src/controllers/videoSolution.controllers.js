@@ -1,7 +1,7 @@
 import { v2 as cloudinary } from 'cloudinary'
-import { ApiResponse } from '../utils/api-responce';
-import Problem from '../models/problem.model';
-import VideoSolution from '../models/videoSolution.model';
+import { ApiResponse } from '../utils/api-responce.js';
+import Problem from '../models/problem.model.js';
+import VideoSolution from '../models/videoSolution.model.js';
 
 
 
@@ -127,11 +127,13 @@ export const saveVideoMetaData = async(req, res)=>{
 export const deleteVideoById = async(req, res)=>{
     try {
         
-        const {videoId} = req.params
+        const {problemId} = req.params
+        // console.log("Problem ID to delete video:", problemId);
 
 
         // delete from db
-        const video = await VideoSolution.findByIdAndDelete(videoId)
+        const video = await VideoSolution.findOneAndDelete({problemId})
+        console.log("Deleted video from DB:", video);
         if(!video){
             return res.status(404).json(new ApiResponse({
                 success: false,

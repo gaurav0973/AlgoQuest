@@ -1,35 +1,44 @@
 import { useNavigate } from "react-router";
-import { Plus, FileEdit, Trash2 } from "lucide-react";
+import { Plus, FileEdit, Trash2, Video } from "lucide-react";
 
 function AdminPanel() {
   const navigate = useNavigate();
 
-  const adminFeatures = [
-    {
-      icon: <Plus className="w-12 h-12 text-emerald-500" />,
-      title: "Create Problem",
-      description: "Add a new coding problem to the platform",
-      route: "/admin/create",
-      buttonText: "Create Problem",
-      buttonClass: "bg-emerald-500 hover:bg-emerald-600",
-    },
-    {
-      icon: <FileEdit className="w-12 h-12 text-yellow-500" />,
-      title: "Update Problem",
-      description: "Edit existing problems and their details",
-      route: "/admin/update",
-      buttonText: "Update Problem",
-      buttonClass: "bg-yellow-500 hover:bg-yellow-600",
-    },
-    {
-      icon: <Trash2 className="w-12 h-12 text-rose-500" />,
-      title: "Delete Problem",
-      description: "Remove problems from the platform",
-      route: "/admin/delete",
-      buttonText: "Delete Problem",
-      buttonClass: "bg-rose-500 hover:bg-rose-600",
-    },
-  ];
+const adminFeatures = [
+  {
+    icon: <Plus className="w-12 h-12 text-emerald-500" />,
+    title: "Create Problem",
+    description: "Add a new coding problem to the platform",
+    route: "/admin/create",
+    buttonText: "Create Problem",
+    buttonClass: "bg-emerald-500 hover:bg-emerald-600",
+  },
+  {
+    icon: <FileEdit className="w-12 h-12 text-yellow-500" />,
+    title: "Update Problem",
+    description: "Edit existing problems and their details",
+    route: "/admin/update",
+    buttonText: "Update Problem",
+    buttonClass: "bg-yellow-500 hover:bg-yellow-600",
+  },
+  {
+    icon: <Trash2 className="w-12 h-12 text-rose-500" />,
+    title: "Delete Problem",
+    description: "Remove problems from the platform",
+    route: "/admin/delete",
+    buttonText: "Delete Problem",
+    buttonClass: "bg-rose-500 hover:bg-rose-600",
+  },
+  {
+    icon: <Video className="w-12 h-12 text-indigo-500" />,
+    title: "Upload and Delete Videos",
+    description: "Add and delete tutorial or solution videos to the platform",
+    route: "/admin/upload-videos",
+    buttonText: "Upload/Delete Video",
+    buttonClass: "bg-indigo-500 hover:bg-indigo-600",
+  },
+];
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
