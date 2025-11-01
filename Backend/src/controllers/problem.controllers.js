@@ -219,7 +219,7 @@ export const getProblemById = async (req, res) => {
     }
 
     // videos yahi par fetrch kar le id bhej do 
-    const video = await VideoSolution.findById({problemId : id})
+    const video = await VideoSolution.findOne({problemId : id})
     if(video){
         problem.secureUrl = video.secureUrl
         problem.thumbnailUrl = video.thumbnailUrl
