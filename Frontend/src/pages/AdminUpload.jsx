@@ -1,179 +1,187 @@
-/* eslint-disable no-unused-vars */
 import { useParams } from "react-router";
-import { useForm } from "react-hook-form";
 import { useState } from "react";
-import { useDropzone } from "react-dropzone";
 import axiosClient from "../utils/axiosClient";
+import axios from "axios";
 
 function AdminUpload() {
   const { problemId } = useParams();
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadedVideo, setUploadedVideo] = useState(null);
+  const [error, setError] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
 
-  const {
-    handleSubmit,
-    formState: { errors },
-    reset,
-    setError,
-    clearErrors,
-    setValue,
-  } = useForm();
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (file.size > 100 * 1024 * 1024) {
+        // 100MB limit
+        setError("File size should not exceed 100MB");
+        event.target.value = null;
+        setSelectedFile(null);
+        return;
+      }
+      setSelectedFile(file);
+      setError(null);
+    }
+  };
 
-  // upload video on cloudinary
-  const onSubmit = async () => {
-    if (acceptedFiles.length === 0) {
-      setError("VideoFile", {
-        type: "manual",
-        message: "Video file is required",
-      });
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (!selectedFile) {
+      setError("Please select a video file");
       return;
     }
 
-    const file = acceptedFiles[0];
-
     setUploading(true);
     setUploadProgress(0);
-    clearErrors();
+    setError(null);
 
     try {
-      //1. get digital signature from backend
-      const sigResponse = await axiosClient.get(`/video/create/${problemId}`);
-    //   console.log("Signature response:", sigResponse?.data?.statusCode?.data);
-      
-      const {
-        signature,
-        timeStamp,
-        api_key,
-        public_id,
+      // 1. Get upload configuration from backend
+      const configResponse = await axiosClient.get(
+        `/video/create/${problemId}`
+      );
+      if (!configResponse.data.success) {
+        throw new Error(
+          configResponse.data.message || "Failed to get upload configuration"
+        );
+      }
+
+      const { cloud_name, upload_preset, folder, public_id } =
+        configResponse.data.data;
+
+      console.log("Received upload config:", {
         cloud_name,
-        upload_url,
-      } = sigResponse.data.statusCode.data
+        upload_preset,
+        folder,
+        public_id,
+      });
 
-      // 2. create form data for cloudinary upload
+      // 2. Create form data for cloudinary upload
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("api_key", api_key);
-      formData.append("timestamp", timeStamp);
+      formData.append("file", selectedFile);
+      formData.append("upload_preset", upload_preset);
+      formData.append("cloud_name", cloud_name);
+      formData.append("folder", folder);
       formData.append("public_id", public_id);
-      formData.append("signature", signature); // 3. upload video to cloudinary
-      const uploadResponse = await axiosClient.post(upload_url, formData, {
+      formData.append("resource_type", "video");
+      // ✅ FIX: Validate form data before upload
+      console.log("FormData entries:");
+      for (let [key, value] of formData.entries()) {
+        console.log(key, value);
+      }
+
+      // 3. Upload video to Cloudinary with better error handling
+      const cloudinaryUrl = `https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`;
+
+      console.log("Uploading to:", cloudinaryUrl);
+
+      const uploadResponse = await axios.post(cloudinaryUrl, formData, {
         headers: {
-          "Content-Type": "multipart/form-data",
+          // ✅ FIX: Let browser set content-type with boundary
         },
+        timeout: 300000, // 5 minutes
         onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setUploadProgress(percentCompleted);
+          if (progressEvent.total) {
+            const percent = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percent);
+            console.log(`Upload progress: ${percent}%`);
+          }
         },
       });
 
-      const cloudinaryData = uploadResponse.data;
-      // 4. save video metadata to backend
-      const saveResponse = await axiosClient.post(`/video/save/${problemId}`, {
+      console.log("✅ Cloudinary upload success:", uploadResponse.data);
+
+      // 4. Save video metadata to backend
+      const saveResponse = await axiosClient.post("/video/save", {
         problemId: problemId,
-        secureUrl: cloudinaryData.secure_url,
-        thumbnailUrl: cloudinaryData.thumbnail_url,
-        cloudinaryPublicId: cloudinaryData.public_id,
-        duration: cloudinaryData.duration,
+        cloudinaryPublicId: uploadResponse.data.public_id,
+        secureUrl: uploadResponse.data.secure_url,
+        cloud_name: cloud_name,
       });
-      setUploadedVideo(saveResponse.data.videoSolution);
-      reset();
+
+      if (!saveResponse.data.success) {
+        throw new Error(
+          saveResponse.data.message || "Failed to save video metadata"
+        );
+      }
+
+      setUploadedVideo(saveResponse.data.data);
+      setSelectedFile(null);
+      // Reset file input
+      const fileInput = document.getElementById("videoInput");
+      if (fileInput) fileInput.value = "";
     } catch (error) {
-      console.error("Error uploading video:", error.message);
-      setError("VideoFile", {
-        type: "manual",
-        message: error.response?.data?.message || "Video upload failed",
-      });
+      console.error("❌ Upload error:", error);
+
+      // ✅ FIX: Better error messages
+      if (error.response) {
+        // Cloudinary API error
+        const cloudinaryError = error.response.data;
+        console.error("Cloudinary error details:", cloudinaryError);
+        setError(
+          cloudinaryError.error?.message || "Upload failed - Cloudinary error"
+        );
+      } else if (error.code === "ECONNABORTED") {
+        setError(
+          "Upload timeout. Please try again with a smaller file or better network."
+        );
+      } else if (error.message) {
+        setError(error.message);
+      } else {
+        setError("Failed to upload video. Please try again.");
+      }
     } finally {
       setUploading(false);
       setUploadProgress(0);
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive, acceptedFiles } =
-    useDropzone({
-      accept: {
-        "video/*": [".mp4", ".avi", ".mov"],
-      },
-      maxFiles: 1,
-      maxSize: 100 * 1024 * 1024, // 100MB
-      onDrop: (files) => {
-        if (files.length > 0) {
-          clearErrors();
-          setValue("VideoFile", files);
-        }
-      },
-    });
-
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-8">Upload Video Solution</h1>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-          {/* Dropzone */}
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
-              ${isDragActive ? "border-primary bg-primary/10" : "border-gray-600 hover:border-primary/50"}
-            `}
-          >
-            <input {...getInputProps()} />
-
-            {acceptedFiles.length > 0 ? (
-              <div className="space-y-2">
-                <div className="flex items-center justify-center text-primary">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-8 w-8"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <p className="text-sm text-gray-400">
-                  Selected file: {acceptedFiles[0].name}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <div className="flex items-center justify-center text-gray-400">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-12 w-12"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3 3m0 0l-3-3m3 3V6"
-                    />
-                  </svg>
-                </div>
-                <p className="text-base">
-                  Drag and drop your video here, or click to select
-                </p>
-                <p className="text-sm text-gray-400">
-                  Maximum file size: 100MB
-                </p>
-              </div>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <label className="block">
+              <span className="text-base">Select Video File</span>
+              <input
+                id="videoInput"
+                type="file"
+                accept="video/*"
+                onChange={handleFileChange}
+                className="mt-2 block w-full text-gray-400
+                  file:mr-4 file:py-2 file:px-4
+                  file:rounded-lg file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-primary file:text-white
+                  hover:file:bg-primary/90
+                  file:cursor-pointer cursor-pointer
+                  disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={uploading}
+              />
+            </label>
+            <p className="text-sm text-gray-400">Maximum file size: 100MB</p>
           </div>
 
+          {/* Selected file info */}
+          {selectedFile && (
+            <div className="bg-gray-800 p-4 rounded-lg">
+              <p className="text-sm text-gray-400">
+                Selected: {selectedFile.name} (
+                {Math.round(selectedFile.size / 1024 / 1024)}MB)
+              </p>
+            </div>
+          )}
+
           {/* Error message */}
-          {errors.VideoFile && (
-            <div className="text-red-500 text-sm">
-              {errors.VideoFile.message}
+          {error && (
+            <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-lg">
+              {error}
             </div>
           )}
 
@@ -193,7 +201,7 @@ function AdminUpload() {
             </div>
           )}
 
-          {/* Upload success message */}
+          {/* Success message */}
           {uploadedVideo && (
             <div className="bg-green-500/10 border border-green-500 text-green-500 px-4 py-3 rounded-lg">
               Video uploaded successfully!
@@ -203,13 +211,9 @@ function AdminUpload() {
           {/* Submit button */}
           <button
             type="submit"
-            disabled={uploading || !acceptedFiles.length}
+            disabled={uploading || !selectedFile}
             className={`w-full py-2 px-4 rounded-lg font-medium transition-colors
-              ${
-                uploading || !acceptedFiles.length
-                  ? "bg-gray-700 cursor-not-allowed"
-                  : "bg-primary hover:bg-primary/90"
-              }
+              ${uploading || !selectedFile ? "bg-gray-700 cursor-not-allowed" : "bg-primary hover:bg-primary/90"}
             `}
           >
             {uploading ? "Uploading..." : "Upload Video"}
@@ -219,4 +223,5 @@ function AdminUpload() {
     </div>
   );
 }
+
 export default AdminUpload;
