@@ -10,6 +10,8 @@ import ProblemPage from "./pages/ProblemPage.jsx";
 import AdminCreate from "./pages/AdminCreate.jsx";
 import AdminUpdate from "./pages/AdminUpdate.jsx";
 import AdminDelete from "./pages/AdminDelete.jsx";
+import AdminVideo from "./pages/AdminVideo.jsx";
+import AdminUpload from "./pages/AdminUpload.jsx";
 
 function App() {
 
@@ -93,6 +95,23 @@ function App() {
               : <Navigate to="/" />
           }
         />
+        <Route
+          path="/admin/upload-videos"
+          element={
+            (isAuthenticated && user?.role === "admin")
+              ? <AdminVideo />
+              : <Navigate to="/" />
+          }
+        />
+        <Route
+          path="/admin/upload/:problemId"
+          element={
+            (isAuthenticated && user?.role === "admin")
+              ? <AdminUpload />
+              : <Navigate to="/" />
+          }
+        />
+        
       </Routes>
     </>
   )
