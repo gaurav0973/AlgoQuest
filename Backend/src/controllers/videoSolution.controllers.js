@@ -153,6 +153,46 @@ export const saveVideoMetaData = async (req, res) => {
   }
 };
 
+export const getVideoByProblemId = async (req, res) => {
+  try {
+    const { problemId } = req.params;
+
+    const videoSolution = await VideoSolution.findOne({ problemId }).sort({
+      createdAt: -1,
+    }); // Get the most recent video solution
+
+    if (!videoSolution) {
+      return res
+        .status(404)
+        .json(
+          new ApiResponse(404, null, "No video solution found for this problem")
+        );
+    }
+
+    return res.status(200).json(
+      new ApiResponse(
+        200,
+        {
+          id: videoSolution._id,
+          secureUrl: videoSolution.secureUrl,
+          thumbnailUrl: videoSolution.thumbnailUrl,
+          duration: videoSolution.duration,
+          format: videoSolution.format,
+          fileSize:
+            Math.round((videoSolution.fileSize / 1024 / 1024) * 100) / 100,
+          uploadedAt: videoSolution.createdAt,
+        },
+        "Video solution fetched successfully"
+      )
+    );
+  } catch (error) {
+    console.error("Error fetching video solution:", error);
+    return res
+      .status(500)
+      .json(new ApiResponse(500, null, "Error fetching video solution"));
+  }
+};
+
 export const deleteVideoById = async (req, res) => {
   try {
     const { problemId } = req.params;
