@@ -79,9 +79,15 @@ function ProblemPage() {
         }
 
         // Fetch video solution if available
-        const videoResponse = await axiosClient.get(`/video/${problemId}`);
-        if (videoResponse?.data?.statusCode === 200) {
-          setVideoSolution(videoResponse.data.data);
+        try {
+          const videoResponse = await axiosClient.get(`/video/${problemId}`);
+          if (videoResponse?.data?.statusCode === 200) {
+            setVideoSolution(videoResponse.data.data);
+          }
+        } catch (videoError) {
+          // Don't set an error state for missing video solution
+          console.log("No video solution available:", videoError.message);
+          setVideoSolution(null);
         }
       } catch (error) {
         console.error("Error fetching problem:", error);

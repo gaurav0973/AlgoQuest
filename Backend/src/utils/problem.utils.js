@@ -17,7 +17,7 @@ export const submitBatch = async (submissions) => {
       base64_encoded: "false", //true => by default
     },
     headers: {
-      "x-rapidapi-key": "1c839a7ca3msh0935978a808f1acp131f9ajsn35e2e9c9f41b",
+      "x-rapidapi-key": process.env.JUDGE0_API_KEY,
       "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
       "Content-Type": "application/json",
     },
@@ -38,12 +38,7 @@ export const submitBatch = async (submissions) => {
   return await fetchData();
 };
 
-
-async function waiting(timer){
-    setTimeout(()=>{
-        return 1;
-    }, timer)
-}
+const waiting = (timer) => new Promise((resolve) => setTimeout(resolve, timer));
 
 export const submitToken = async (resultToken) => {
   const options = {
@@ -55,7 +50,7 @@ export const submitToken = async (resultToken) => {
       fields: "*",
     },
     headers: {
-      "x-rapidapi-key": "1c839a7ca3msh0935978a808f1acp131f9ajsn35e2e9c9f41b",
+      "x-rapidapi-key": process.env.JUDGE0_API_KEY,
       "x-rapidapi-host": "judge0-ce.p.rapidapi.com",
     },
   };
@@ -74,6 +69,6 @@ export const submitToken = async (resultToken) => {
     const isResultObtained = result.submissions.every((r) => r.status_id > 2);
     if (isResultObtained) return result.submissions;
 
-    await waiting(1000*1)
+    await waiting(1000 * 1);
   }
 };
