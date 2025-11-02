@@ -3,6 +3,7 @@ import { useParams, Link } from "react-router";
 import Editor from "@monaco-editor/react";
 import axiosClient from "../utils/axiosClient";
 import SubmissionHistory from "./SubmissionHistory";
+import { FiCode, FiPlayCircle } from "react-icons/fi";
 
 const LANGUAGE_OPTIONS = [
   { id: "javascript", name: "JavaScript", languageId: 63 },
@@ -31,17 +32,19 @@ function ProblemPage() {
   const [output, setOutput] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
-
+  const [editorialTab, setEditorialTab] = useState("code");
+  const [videoSolution, setVideoSolution] = useState(null);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProblem = async () => {
+    const fetchProblemAndSolution = async () => {
       try {
         setIsLoading(true);
         setError(null);
         console.log("Fetching problem with ID:", problemId);
 
+        // Fetch problem details
         const response = await axiosClient.get(`/problem/${problemId}`);
         console.log("API Response:", response);
 
@@ -74,6 +77,12 @@ function ProblemPage() {
             `Server returned status: ${response?.data?.statusCode}`
           );
         }
+
+        // Fetch video solution if available
+        const videoResponse = await axiosClient.get(`/video/${problemId}`);
+        if (videoResponse?.data?.statusCode === 200) {
+          setVideoSolution(videoResponse.data.data);
+        }
       } catch (error) {
         console.error("Error fetching problem:", error);
         console.error("Error details:", error.response || error.message);
@@ -84,7 +93,7 @@ function ProblemPage() {
     };
 
     if (problemId) {
-      fetchProblem();
+      fetchProblemAndSolution();
     } else {
       console.log("No problemId provided");
       setError("Problem ID is required");
@@ -266,10 +275,16 @@ function ProblemPage() {
             >
               Submissions
             </button>
+            <button
+              className={`tab tab-bordered ${activeTab === "editorial" ? "tab-active" : ""}`}
+              onClick={() => setActiveTab("editorial")}
+            >
+              Editorial
+            </button>
           </div>
 
           <div className="p-4 h-[calc(100vh-8rem)] overflow-y-auto">
-            {activeTab === "description" ? (
+            {activeTab === "description" && (
               <div className="prose max-w-none">
                 <div className="flex items-center gap-2 mb-4">
                   <div
@@ -317,10 +332,101 @@ function ProblemPage() {
                   ))}
                 </div>
               </div>
-            ) : (
+            )}
+            {activeTab === "submissions" && (
               <div>
                 <h3 className="text-lg font-semibold mb-4">Your Submissions</h3>
                 <SubmissionHistory problemId={problemId} />
+              </div>
+            )}
+            {activeTab === "editorial" && (
+              <div className="space-y-6">
+                {/* Editorial Tabs */}
+                <div className="tabs tabs-boxed">
+                  <button
+                    className={`tab ${editorialTab === "code" ? "tab-active" : ""}`}
+                    onClick={() => setEditorialTab("code")}
+                  >
+                    <FiCode className="mr-2" />
+                    Code
+                  </button>
+                  <button
+                    className={`tab ${editorialTab === "video" ? "tab-active" : ""}`}
+                    onClick={() => setEditorialTab("video")}
+                  >
+                    <FiPlayCircle className="mr-2" />
+                    Video
+                  </button>
+                </div>
+
+                {/* Editorial Content */}
+                <div className="bg-base-200 rounded-lg p-6">
+                  {editorialTab === "code" && (
+                    <div className="space-y-6">
+                      <section>
+                        <h2 className="text-xl font-semibold mb-4">
+                          Coding Approach
+                        </h2>
+                        <div className="prose max-w-none mb-6">
+                          {problem?.editorial?.codingApproach ||
+                            "No coding approach provided yet."}
+                        </div>
+
+                        {problem?.referenceSolution?.map((solution, index) => (
+                          <div key={index} className="mt-4">
+                            <h3 className="text-lg font-semibold mb-2">
+                              {solution.language}
+                            </h3>
+                            <pre className="bg-base-300 p-4 rounded-lg overflow-x-auto">
+                              <code>{solution.completeCode}</code>
+                            </pre>
+                          </div>
+                        ))}
+                      </section>
+                    </div>
+                  )}
+
+                  {editorialTab === "video" && videoSolution && (
+                    <div>
+                      <div className="aspect-video rounded-lg overflow-hidden bg-base-300">
+                        <video
+                          controls
+                          className="w-full h-full"
+                          poster={videoSolution.thumbnailUrl}
+                        >
+                          <source
+                            src={videoSolution.secureUrl}
+                            type="video/mp4"
+                          />
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                      <div className="mt-4 flex items-center gap-4 text-sm text-base-content/70">
+                        <span>
+                          Duration: {Math.floor(videoSolution.duration / 60)}m{" "}
+                          {videoSolution.duration % 60}s
+                        </span>
+                        <span>•</span>
+                        <span>
+                          Quality: {videoSolution.format?.toUpperCase()}
+                        </span>
+                        <span>•</span>
+                        <span>
+                          Size: {Math.round(videoSolution.fileSize * 10) / 10}{" "}
+                          MB
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {editorialTab === "video" && !videoSolution && (
+                    <div className="text-center py-12">
+                      <FiPlayCircle className="mx-auto text-6xl mb-4 text-base-content/30" />
+                      <p className="text-base-content/70">
+                        Video solution is not available yet.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>

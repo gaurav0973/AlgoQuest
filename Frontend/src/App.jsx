@@ -12,6 +12,7 @@ import AdminUpdate from "./pages/AdminUpdate.jsx";
 import AdminDelete from "./pages/AdminDelete.jsx";
 import AdminVideo from "./pages/AdminVideo.jsx";
 import AdminUpload from "./pages/AdminUpload.jsx";
+import EditorialPage from "./pages/EditorialPage.jsx";
 
 function App() {
 
@@ -62,6 +63,10 @@ function App() {
         <Route
           path="/problem/:problemId"
           element={<ProblemPage />}
+        />
+        <Route
+          path="/editorial/:problemId"
+          element={<EditorialPage />}
         />
         <Route 
           path="/admin" 
