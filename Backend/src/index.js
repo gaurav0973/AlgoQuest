@@ -13,13 +13,16 @@ dotenv.config();
 
 const app = express();
 
-// global pody-parser
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, "http://localhost:5173"], // Add your production domain here
+    origin: [
+      process.env.FRONTEND_URL,
+      "http://localhost:5173"
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "Cookie"],
+    exposedHeaders: ["set-cookie"],
   })
 );
 app.use(express.json());
