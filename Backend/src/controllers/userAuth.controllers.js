@@ -28,11 +28,12 @@ export const register = async (req, res) => {
         expiresIn: 60 * 60,
       }
     );
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 1000 * 60 * 60,
-    });
+    res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Only use HTTPS in production
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+});
 
     //5. send the responce
     res
@@ -76,11 +77,12 @@ export const adminRegister = async (req, res) => {
         expiresIn: 60 * 60,
       }
     );
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 1000 * 60 * 60,
-    });
+    res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Only use HTTPS in production
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+});
 
     //5. send the responce
     res
@@ -127,11 +129,12 @@ export const login = async (req, res) => {
         expiresIn: 60 * 60,
       }
     );
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: true,
-      maxAge: 1000 * 60 * 60, //millisec
-    });
+    res.cookie('token', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production', // Only use HTTPS in production
+    sameSite: 'strict',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+});
 
     // 5. send the responce
     res.status(200).json(

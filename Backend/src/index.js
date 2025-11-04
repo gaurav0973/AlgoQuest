@@ -18,6 +18,7 @@ app.use(
     origin: [
       "http://localhost:5173",
       "http://localhost:5174",
+      "http://13.201.185.74:5173", // Add your production URL
       process.env.FRONTEND_URL,
     ],
     credentials: true,
@@ -32,7 +33,7 @@ app.use("/problem", problemRouter);
 app.use("/submission", submitRoute);
 app.use("/video", videoRoute);
 
-const PORT =  process.env.PORT || 4000
+const PORT = process.env.PORT || 4000;
 connectDB()
   .then(async () => {
     app.listen(PORT, "0.0.0.0", () => {
