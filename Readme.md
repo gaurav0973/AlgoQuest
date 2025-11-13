@@ -36,6 +36,9 @@ AlgoQuest is a full-stack competitive programming platform inspired by LeetCode,
 - **State Management**
     - Redux Toolkit integration for state management
 
+- **File Uploads**
+  - Cloudinary integration for video solution storage
+
 ## 🛠️ Tech Stack
 
 ### Frontend
