@@ -13,8 +13,6 @@ AlgoQuest is a full-stack competitive programming platform inspired by LeetCode,
 - **Interactive Code Editor**
 
   - Monaco Editor integration (VS Code editor)
-  - Syntax highlighting for multiple languages
-  - Real-time code editing experience
 
 - **Problem Management**
 
@@ -26,7 +24,7 @@ AlgoQuest is a full-stack competitive programming platform inspired by LeetCode,
 - **Code Execution & Submission**
 
   - Judge0 API integration for code execution
-  - Support for multiple programming languages
+  - Support for 3 programming languages
   - Real-time compilation and execution results
   - Submission history tracking
 
@@ -34,13 +32,9 @@ AlgoQuest is a full-stack competitive programming platform inspired by LeetCode,
 
   - Create, update, and delete problems
   - Upload video solutions
-  - Manage test cases
-  - Full CRUD operations for problem management
 
 - **State Management**
-  - Zustand for efficient React state management
-  - Redux Toolkit integration
-  - Persistent authentication state
+    - Redux Toolkit integration for state management
 
 ## 🛠️ Tech Stack
 
@@ -50,22 +44,21 @@ AlgoQuest is a full-stack competitive programming platform inspired by LeetCode,
 - **Build Tool:** Vite
 - **Styling:** Tailwind CSS, DaisyUI
 - **Code Editor:** Monaco Editor (@monaco-editor/react)
-- **State Management:** Zustand, Redux Toolkit
-- **Routing:** React Router v7
+- **State Management:** Redux Toolkit
+- **Routing:** React Router 
 - **Form Handling:** React Hook Form with Zod validation
 - **HTTP Client:** Axios
-- **Icons:** Lucide React, React Icons
 
 ### Backend
 
 - **Runtime:** Node.js
-- **Framework:** Express.js 5
+- **Framework:** Express.js 
 - **Database:** MongoDB with Mongoose ODM
 - **Authentication:** JWT (JSON Web Tokens)
 - **Password Hashing:** bcrypt
 - **File Upload:** Cloudinary
 - **Code Execution:** Judge0 API
-- **Validation:** Validator.js
+- **Validation:** Validator.js, Zod
 
 ### DevOps & Deployment
 
@@ -255,42 +248,6 @@ This will start:
 - Upload video solutions
 - Manage test cases
 
-## 🏗️ Architecture
-
-### Frontend Architecture
-
-- Component-based architecture with React
-- Zustand for lightweight state management
-- Redux Toolkit for authentication state
-- React Router for navigation
-- Axios interceptors for API calls with JWT tokens
-
-### Backend Architecture
-
-- RESTful API design
-- MVC pattern (Model-View-Controller)
-- Middleware for authentication and authorization
-- Mongoose ODM for MongoDB interactions
-- Judge0 API integration for code execution
-
-### Security Features
-
-- JWT-based stateless authentication
-- HTTP-only cookies for token storage
-- Password hashing with bcrypt
-- CORS configuration
-- Input validation and sanitization
-- Role-based access control
-
-## 🧪 Code Execution Flow
-
-1. User writes code in Monaco Editor
-2. Code is sent to backend via API
-3. Backend forwards code to Judge0 API
-4. Judge0 compiles and executes code against test cases
-5. Results are returned and stored in database
-6. Frontend displays execution results and test case outcomes
-
 ## 🌐 Deployment
 
 The application is deployed on AWS using Docker containers:
@@ -336,9 +293,7 @@ The application is deployed on AWS using Docker containers:
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
-## 📄 License
 
-This project is licensed under the ISC License.
 
 ## 👨‍💻 Author
 
@@ -352,5 +307,3 @@ This project is licensed under the ISC License.
 - Cloudinary for media storage
 
 ---
-
-**Note:** This project is for educational purposes and demonstrates full-stack development skills including React, Node.js, MongoDB, Docker, and cloud deployment.
